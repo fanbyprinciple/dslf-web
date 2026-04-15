@@ -79,12 +79,19 @@
   line-height: 1;
 }
 
-.home-days-since-text {
-  font-size: 22px;
+.home-days-text {
+  font-size: 48px;
+  font-weight: 900;
+  color: #1A1A1A;
+  letter-spacing: 2px;
+}
+
+.home-since-text {
+  font-size: 18px;
   font-weight: 800;
   color: #1A1A1A;
   text-align: center;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .home-week-dots {

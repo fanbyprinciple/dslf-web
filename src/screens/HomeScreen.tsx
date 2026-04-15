@@ -61,9 +61,8 @@ export default function HomeScreen({
             <div className="home-num-box">
               <span className="home-num-text">{streakDays}</span>
             </div>
-            <div className="home-days-since-text">
-              {streakDays === 1 ? 'Day' : 'Days'} Since Last Fight
-            </div>
+            <div className="home-days-text">DAYS</div>
+            <div className="home-since-text">SINCE LAST FIGHT</div>
           </div>
 
           {/* Bottom stripe */}
