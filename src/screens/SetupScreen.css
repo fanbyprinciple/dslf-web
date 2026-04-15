@@ -136,3 +136,18 @@
   text-align: center;
   line-height: 1.5;
 }
+
+.setup-skip-btn {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0 0;
+  align-self: center;
+}
+
+.setup-skip-btn:hover {
+  color: #555;
+}

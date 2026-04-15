@@ -4,9 +4,10 @@ import './SetupScreen.css';
 
 interface SetupScreenProps {
   onComplete: (token: string) => void;
+  onSkip?: () => void;
 }
 
-export default function SetupScreen({ onComplete }: SetupScreenProps) {
+export default function SetupScreen({ onComplete, onSkip }: SetupScreenProps) {
   const [token, setToken] = useState('');
   const [status, setStatus] = useState<'idle' | 'checking' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -79,8 +80,14 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
         </button>
 
         <p className="setup-note">
-          🔒 Token is stored only in your browser's localStorage — never sent anywhere except GitHub's API.
+          🔒 Token stored only in this browser's localStorage — never sent anywhere except GitHub's API.
         </p>
+
+        {onSkip && (
+          <button className="setup-skip-btn" onClick={onSkip}>
+            ← Cancel
+          </button>
+        )}
       </div>
     </div>
   );

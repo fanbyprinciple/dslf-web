@@ -8,39 +8,37 @@ import SetupScreen from './screens/SetupScreen';
 import { Fight, computeStreakDays } from './utils';
 import {
   getStoredToken,
+  saveToken,
   loadFightsFromGitHub,
   saveFightsToGitHub,
+  validateToken,
 } from './githubStorage';
 import './App.css';
 
 type AppScreen = 'dashboard' | 'reset' | 'calendar' | 'statistics';
-type AppState = 'setup' | 'loading' | 'ready' | 'error';
+type AppState = 'loading' | 'ready' | 'error';
 
 export default function App() {
   const [appState, setAppState] = useState<AppState>('loading');
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() => getStoredToken());
   const [screen, setScreen] = useState<AppScreen>('dashboard');
+  // tokenPrompt: show token setup inline when trying to log a fight on a tokenless device
+  const [tokenPrompt, setTokenPrompt] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [streakDays, setStreakDays] = useState(0);
   const [lastFightReason, setLastFightReason] = useState('Communication');
   const [fights, setFights] = useState<Fight[]>([]);
   const [syncError, setSyncError] = useState('');
 
-  // Bootstrap: check for token then load data
+  // Bootstrap: load data from public GitHub API — no token required
   useEffect(() => {
-    const t = getStoredToken();
-    if (!t) {
-      setAppState('setup');
-      return;
-    }
-    setToken(t);
-    loadData(t);
+    loadData();
   }, []);
 
-  async function loadData(t: string) {
+  async function loadData() {
     setAppState('loading');
     try {
-      const loaded = await loadFightsFromGitHub(t);
+      const loaded = await loadFightsFromGitHub();
       setFights(loaded);
       const last = loaded.length > 0 ? Math.max(...loaded.map((f) => f.timestamp)) : null;
       setStreakDays(computeStreakDays(last));
@@ -55,9 +53,12 @@ export default function App() {
     }
   }
 
-  const handleSetupComplete = useCallback((t: string) => {
+  // Called when user completes token setup from the inline prompt
+  const handleTokenSetupComplete = useCallback(async (t: string) => {
+    saveToken(t);
     setToken(t);
-    loadData(t);
+    setTokenPrompt(false);
+    setModalVisible(true);
   }, []);
 
   // Recalculate streak every minute on dashboard
@@ -70,7 +71,14 @@ export default function App() {
     return () => clearInterval(interval);
   }, [screen, fights, appState]);
 
-  const handleLogFight = useCallback(() => setModalVisible(true), []);
+  const handleLogFight = useCallback(() => {
+    if (!token) {
+      // No token on this device — ask for it before showing modal
+      setTokenPrompt(true);
+    } else {
+      setModalVisible(true);
+    }
+  }, [token]);
 
   const handleSaveFight = useCallback(
     async (reason: string, notes: string, resolved: boolean) => {
@@ -84,7 +92,6 @@ export default function App() {
       setModalVisible(false);
       setScreen('reset');
 
-      // Persist to GitHub in background
       if (token) {
         try {
           await saveFightsToGitHub(token, updatedFights);
@@ -97,10 +104,6 @@ export default function App() {
   );
 
   const handleDone = useCallback(() => setScreen('dashboard'), []);
-
-  if (appState === 'setup') {
-    return <SetupScreen onComplete={handleSetupComplete} />;
-  }
 
   if (appState === 'loading') {
     return (
@@ -117,10 +120,20 @@ export default function App() {
         <span className="app-error-icon">⚠️</span>
         <p className="app-error-title">Could not reach GitHub</p>
         <p className="app-error-msg">{syncError}</p>
-        <button className="app-error-retry" onClick={() => token && loadData(token)}>
+        <button className="app-error-retry" onClick={loadData}>
           Retry
         </button>
       </div>
+    );
+  }
+
+  // Inline token setup: shown when user hits "Log Fight" on a device without a token
+  if (tokenPrompt) {
+    return (
+      <SetupScreen
+        onComplete={handleTokenSetupComplete}
+        onSkip={() => setTokenPrompt(false)}
+      />
     );
   }
 

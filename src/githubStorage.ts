@@ -23,18 +23,15 @@ interface GitHubFileResponse {
   encoding: string;
 }
 
-async function getFile(token: string): Promise<{ fights: Fight[]; sha: string }> {
-  const res = await fetch(`${API_BASE}/repos/${REPO}/contents/${FILE_PATH}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-    },
-  });
+// Reads are unauthenticated — public repo, works on any device without token.
+// Optional token passed only when writing (to get fresh SHA).
+async function getFile(token?: string): Promise<{ fights: Fight[]; sha: string }> {
+  const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
 
-  if (res.status === 404) {
-    // File doesn't exist yet — return empty
-    return { fights: [], sha: '' };
-  }
+  const res = await fetch(`${API_BASE}/repos/${REPO}/contents/${FILE_PATH}`, { headers });
+
+  if (res.status === 404) return { fights: [], sha: '' };
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -47,13 +44,12 @@ async function getFile(token: string): Promise<{ fights: Fight[]; sha: string }>
   return { fights, sha: data.sha };
 }
 
-export async function loadFightsFromGitHub(token: string): Promise<Fight[]> {
-  const { fights } = await getFile(token);
+export async function loadFightsFromGitHub(): Promise<Fight[]> {
+  const { fights } = await getFile();
   return fights;
 }
 
 export async function saveFightsToGitHub(token: string, fights: Fight[]): Promise<void> {
-  // Get current SHA (needed for update commits)
   const { sha } = await getFile(token);
 
   const content = btoa(JSON.stringify(fights, null, 2));
