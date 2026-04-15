@@ -16,6 +16,9 @@ interface DayCell {
   connectLeft: boolean;
   connectRight: boolean;
   fightCount: number;
+  fightReason?: string;
+  fightResolved?: boolean;
+  fightNotes?: string;
 }
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -26,11 +29,17 @@ function buildCalendar(year: number, month: number, fights: Fight[]): DayCell[] 
 
   const fightDateSet = new Set<string>();
   const fightCountMap: Record<string, number> = {};
+  const fightReasonMap: Record<string, string> = {};
+  const fightResolvedMap: Record<string, boolean> = {};
+  const fightNotesMap: Record<string, string> = {};
   fights.forEach((f) => {
     const d = new Date(f.timestamp);
     const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
     fightDateSet.add(key);
     fightCountMap[key] = (fightCountMap[key] || 0) + 1;
+    fightReasonMap[key] = f.reason;
+    if (f.resolved !== undefined) fightResolvedMap[key] = f.resolved;
+    if (f.notes) fightNotesMap[key] = f.notes;
   });
 
   const firstDay = new Date(year, month, 1);
@@ -63,7 +72,17 @@ function buildCalendar(year: number, month: number, fights: Fight[]): DayCell[] 
     } else {
       status = 'future';
     }
-    return { day: date.getDate(), date, status, connectLeft: false, connectRight: false, fightCount: fightCountMap[key] || 0 };
+    return {
+      day: date.getDate(),
+      date,
+      status,
+      connectLeft: false,
+      connectRight: false,
+      fightCount: fightCountMap[key] || 0,
+      fightReason: fightReasonMap[key],
+      fightResolved: fightResolvedMap[key],
+      fightNotes: fightNotesMap[key],
+    };
   });
 
   // Compute connections for streak days
@@ -97,28 +116,6 @@ export default function CalendarScreen({ fights, onBack }: CalendarScreenProps) 
     [currentMonth, fights]
   );
 
-  // Compute streak count (consecutive no-fight days up to today)
-  const streakDays = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const fightDateSet = new Set(
-      fights.map((f) => {
-        const d = new Date(f.timestamp);
-        d.setHours(0, 0, 0, 0);
-        return d.getTime();
-      })
-    );
-    let count = 0;
-    const cur = new Date(today);
-    while (true) {
-      if (fightDateSet.has(cur.getTime())) break;
-      count++;
-      cur.setDate(cur.getDate() - 1);
-      if (count > 365) break;
-    }
-    return count;
-  }, [fights]);
-
   const monthLabel = new Date(currentMonth.year, currentMonth.month, 1).toLocaleDateString('en-US', {
     month: 'long',
     year: 'numeric',
@@ -150,30 +147,7 @@ export default function CalendarScreen({ fights, onBack }: CalendarScreenProps) 
       </div>
 
       <div className="cal-scroll">
-        {/* Streak card */}
-        <div className="cal-streak-card">
-          <div className="cal-streak-card-left">
-            <span className="cal-streak-badge">STREAK SOCIETY</span>
-            <span className="cal-streak-days">{streakDays} day streak</span>
-            <div className="cal-streak-msg-row">
-              <span className="cal-streak-msg-icon">⏱</span>
-              <span className="cal-streak-msg">
-                {streakDays === 0
-                  ? 'Log your first fight-free day!'
-                  : 'Keep going — no fights today!'}
-              </span>
-            </div>
-            {fights.length > 0 && (
-              <span className="cal-streak-extend">VIEW FIGHT LOG ›</span>
-            )}
-          </div>
-          <div className="cal-streak-card-right">
-            <span className="cal-streak-flame">🔥</span>
-          </div>
-        </div>
-
         {/* Calendar */}
-        <div className="cal-section-title">Calendar</div>
         <div className="cal-calendar-box">
           {/* Month nav */}
           <div className="cal-month-nav">
@@ -241,45 +215,37 @@ export default function CalendarScreen({ fights, onBack }: CalendarScreenProps) 
           </div>
         </div>
 
+        {/* Tap hint */}
+        <div className="cal-tap-hint">TAP A DATE TO SEE DETAILS</div>
+
         {/* Selected day detail */}
-        {selectedCell && (
+        {selectedCell && selectedCell.day && (
           <div className="cal-detail-card">
             <span className="cal-detail-date">
               {selectedCell.date?.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </span>
             {selectedCell.status === 'streak' || selectedCell.status === 'today-streak' ? (
               <>
-                <span className="cal-detail-status-green">✓ Fight-free day</span>
+                <span className="cal-detail-status-green">Fight-free day</span>
                 <span className="cal-detail-notes">No fights logged — streak continued!</span>
               </>
             ) : selectedCell.status === 'fight' || selectedCell.status === 'today-fight' ? (
               <>
-                <span className="cal-detail-reason">
-                  ⚡ {selectedCell.fightCount} fight{selectedCell.fightCount > 1 ? 's' : ''} logged
-                </span>
-                <span className="cal-detail-status-red">Streak reset this day</span>
+                <span className="cal-detail-reason">Reason: {selectedCell.fightReason}</span>
+                {selectedCell.fightResolved !== undefined && (
+                  <span className={selectedCell.fightResolved ? 'cal-detail-status-green' : 'cal-detail-status-red'}>
+                    Status: {selectedCell.fightResolved ? 'Resolved' : 'Unresolved'}
+                  </span>
+                )}
+                {selectedCell.fightNotes && (
+                  <span className="cal-detail-notes">Note: {selectedCell.fightNotes}</span>
+                )}
               </>
             ) : (
               <span className="cal-detail-notes">Future date</span>
             )}
           </div>
         )}
-
-        {/* Legend */}
-        <div className="cal-legend">
-          <div className="cal-legend-item">
-            <div className="cal-legend-dot cal-legend-streak" />
-            <span>Streak day</span>
-          </div>
-          <div className="cal-legend-item">
-            <div className="cal-legend-dot cal-legend-fight" />
-            <span>Fight logged</span>
-          </div>
-          <div className="cal-legend-item">
-            <div className="cal-legend-dot cal-legend-future" />
-            <span>Upcoming</span>
-          </div>
-        </div>
       </div>
     </div>
   );

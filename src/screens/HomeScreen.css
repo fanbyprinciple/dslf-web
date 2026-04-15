@@ -94,13 +94,47 @@
   max-width: 280px;
 }
 
-.home-tagline {
-  font-size: 13px;
-  font-weight: 500;
-  color: #424242;
-  text-align: center;
+.home-week-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
   align-self: center;
-  max-width: 300px;
+}
+
+.home-week-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1A1A1A;
+}
+
+.home-week-dot-streak {
+  background-color: #1A1A1A;
+}
+
+.home-week-dot-fight {
+  background-color: #c62828;
+}
+
+.home-week-dot-today {
+  background-color: #1A1A1A;
+  box-shadow: 0 0 0 3px #FFD600;
+}
+
+.home-week-dot-future {
+  background-color: #4a4a4a;
+  opacity: 0.4;
+}
+
+.home-week-dot-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0;
+  line-height: 1;
 }
 
 .home-log-btn {

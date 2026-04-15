@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Fight } from '../utils';
+import { Fight, WEEK_DAYS, getWeekDotStatuses } from '../utils';
 import './StatisticsScreen.css';
 
 interface StatisticsScreenProps {
@@ -15,6 +15,8 @@ export default function StatisticsScreen({
   currentStreak,
   onBack,
 }: StatisticsScreenProps) {
+  const weekStatuses = useMemo(() => getWeekDotStatuses(fights), [fights]);
+
   const stats = useMemo(() => {
     const totalFights = fights.length;
 
@@ -129,6 +131,20 @@ export default function StatisticsScreen({
             <span className="stats-kpi-label stats-kpi-label-dark">BEST STREAK</span>
             <span className="stats-kpi-value stats-kpi-value-dark">{stats.bestStreak}d</span>
           </div>
+        </div>
+
+        {/* WEEK STREAK label */}
+        <div className="stats-section-label">
+          <span className="stats-section-label-text">WEEK STREAK</span>
+        </div>
+
+        {/* Week dots */}
+        <div className="stats-week-dots">
+          {WEEK_DAYS.map((day, i) => (
+            <div key={i} className={`stats-week-dot stats-week-dot-${weekStatuses[i]}`}>
+              <span className="stats-week-dot-label">{day}</span>
+            </div>
+          ))}
         </div>
 
         {/* TOP FIGHT TRIGGERS label */}

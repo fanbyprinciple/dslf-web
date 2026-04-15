@@ -73,9 +73,9 @@ export default function App() {
   const handleLogFight = useCallback(() => setModalVisible(true), []);
 
   const handleSaveFight = useCallback(
-    async (reason: string, _notes: string, _resolved: boolean) => {
+    async (reason: string, notes: string, resolved: boolean) => {
       const now = Date.now();
-      const newFight: Fight = { timestamp: now, reason };
+      const newFight: Fight = { timestamp: now, reason, notes, resolved };
       const updatedFights = [...fights, newFight];
 
       setFights(updatedFights);
@@ -130,6 +130,7 @@ export default function App() {
         <>
           <HomeScreen
             streakDays={streakDays}
+            fights={fights}
             onLogFight={handleLogFight}
             onViewCalendar={() => setScreen('calendar')}
             onViewStatistics={() => setScreen('statistics')}

@@ -141,6 +141,54 @@
   color: #1A1A1A;
 }
 
+/* Week dots */
+.stats-week-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 4px 16px 8px;
+}
+
+.stats-week-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1A1A1A;
+}
+
+.stats-week-dot-streak {
+  background-color: #FFD600;
+}
+
+.stats-week-dot-fight {
+  background-color: #c62828;
+}
+
+.stats-week-dot-today {
+  background-color: #FFD600;
+  box-shadow: 0 0 0 3px #cc9900;
+}
+
+.stats-week-dot-future {
+  background-color: #4a4a4a;
+  opacity: 0.4;
+}
+
+.stats-week-dot-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+}
+
+.stats-week-dot-streak .stats-week-dot-label,
+.stats-week-dot-today .stats-week-dot-label {
+  color: #1A1A1A;
+}
+
 /* Detail cards */
 .stats-trig-wrap,
 .stats-insight-wrap {

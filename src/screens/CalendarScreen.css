@@ -254,10 +254,9 @@
   background-color: #FFD600;
 }
 
-/* Fight day — dark with red tint */
+/* Fight day — red circle */
 .cal-day-fight {
-  background-color: #2b1a1a;
-  border: 2px solid #c62828;
+  background-color: #c62828;
 }
 
 /* Today streak — yellow with bold ring */
@@ -268,8 +267,8 @@
 
 /* Today fight */
 .cal-day-today-fight {
-  background-color: #2b1a1a;
-  box-shadow: 0 0 0 3px #c62828;
+  background-color: #c62828;
+  box-shadow: 0 0 0 3px #8b0000;
 }
 
 /* Today empty */
@@ -300,7 +299,7 @@
 }
 
 .cal-day-num-fight {
-  color: #ef9a9a;
+  color: white;
 }
 
 .cal-day-num-today {
@@ -323,6 +322,16 @@
   z-index: 2;
 }
 
+/* ── Tap hint ──────────────────────────────────── */
+.cal-tap-hint {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 1px;
+  padding: 4px 0;
+}
+
 /* ── Detail card ───────────────────────────────── */
 .cal-detail-card {
   background: #1A1A1A;
@@ -340,7 +349,7 @@
 }
 
 .cal-detail-reason {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: white;
 }

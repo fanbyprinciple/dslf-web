@@ -1,9 +1,10 @@
 import React from 'react';
-import { Colors } from '../constants';
+import { Fight, WEEK_DAYS, getWeekDotStatuses } from '../utils';
 import './HomeScreen.css';
 
 interface HomeScreenProps {
   streakDays: number;
+  fights: Fight[];
   onLogFight: () => void;
   onViewCalendar: () => void;
   onViewStatistics: () => void;
@@ -11,10 +12,13 @@ interface HomeScreenProps {
 
 export default function HomeScreen({
   streakDays,
+  fights,
   onLogFight,
   onViewCalendar,
   onViewStatistics,
 }: HomeScreenProps) {
+  const weekStatuses = getWeekDotStatuses(fights);
+
   return (
     <div className="home-root">
       {/* Header */}
@@ -43,9 +47,13 @@ export default function HomeScreen({
           <div className="safety-stripes"></div>
         </div>
 
-        {/* Tagline */}
-        <div className="home-tagline">
-          Relationship safety record — keep the streak alive
+        {/* Week streak dots */}
+        <div className="home-week-dots">
+          {WEEK_DAYS.map((day, i) => (
+            <div key={i} className={`home-week-dot home-week-dot-${weekStatuses[i]}`}>
+              <span className="home-week-dot-label">{day}</span>
+            </div>
+          ))}
         </div>
 
         {/* CTA Button */}
@@ -60,11 +68,11 @@ export default function HomeScreen({
         <div className="home-nav-buttons-row">
           <button className="home-nav-btn" onClick={onViewCalendar}>
             <span className="home-nav-btn-icon">📅</span>
-            <span className="home-nav-btn-label">Fight History</span>
+            <span className="home-nav-btn-label">HISTORY</span>
           </button>
           <button className="home-nav-btn" onClick={onViewStatistics}>
             <span className="home-nav-btn-icon">📊</span>
-            <span className="home-nav-btn-label">Stats</span>
+            <span className="home-nav-btn-label">STATS</span>
           </button>
         </div>
       </div>
