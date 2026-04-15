@@ -1,0 +1,211 @@
+.fight-log-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.53);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fight-log-modal-sheet {
+  background-color: white;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  max-height: 90vh;
+  width: 100%;
+  max-width: 600px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.fight-log-modal-header {
+  background-color: #FFD600;
+  padding: 20px 24px;
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fight-log-modal-handle-bar {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #9E9E9E;
+  margin-bottom: 4px;
+}
+
+.fight-log-modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.fight-log-modal-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #424242;
+  margin: 0;
+}
+
+.fight-log-modal-body {
+  background-color: white;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fight-log-modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fight-log-modal-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #424242;
+  letter-spacing: 1.2px;
+}
+
+.fight-log-modal-chips-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fight-log-modal-chip {
+  border-radius: 999px;
+  border: 2px solid #1A1A1A;
+  padding: 8px 16px;
+  background-color: white;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fight-log-modal-chip:hover {
+  opacity: 0.9;
+}
+
+.fight-log-modal-chip-selected {
+  background-color: #FFD600;
+  font-weight: 700;
+}
+
+.fight-log-modal-notes-field {
+  border: 1.5px solid #9E9E9E;
+  border-radius: 12px;
+  padding: 12px 16px;
+  height: 80px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background-color: white;
+  font-family: inherit;
+  resize: none;
+}
+
+.fight-log-modal-notes-field::placeholder {
+  color: #9E9E9E;
+}
+
+.fight-log-modal-resolved-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fight-log-modal-resolved-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.fight-log-modal-toggle-wrap {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #1A1A1A;
+}
+
+.fight-log-modal-toggle-btn {
+  padding: 8px 20px;
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fight-log-modal-toggle-btn-active {
+  background-color: #388E3C;
+}
+
+.fight-log-modal-toggle-btn-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.fight-log-modal-toggle-btn-text-active {
+  color: white;
+}
+
+.fight-log-modal-divider {
+  height: 1px;
+  background-color: #E0E0E0;
+}
+
+.fight-log-modal-save-btn {
+  height: 56px;
+  background-color: #FFD600;
+  border: 2px solid #1A1A1A;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1A1A1A;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.fight-log-modal-save-btn:hover {
+  opacity: 0.9;
+}
+
+.fight-log-modal-save-btn:active {
+  opacity: 0.8;
+}
+
+.fight-log-modal-cancel-btn {
+  background: transparent;
+  border: none;
+  color: #424242;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px;
+  transition: opacity 0.2s;
+}
+
+.fight-log-modal-cancel-btn:hover {
+  opacity: 0.8;
+}
