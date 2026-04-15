@@ -7,11 +7,16 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "video:studio": "remotion studio remotion/index.ts",
+    "video:render": "remotion render remotion/index.ts DSLFShowcase out/showcase.mp4"
   },
   "dependencies": {
+    "@remotion/cli": "^4.0.448",
+    "@remotion/player": "^4.0.448",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "remotion": "^4.0.448"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",
