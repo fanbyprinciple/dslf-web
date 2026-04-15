@@ -4,80 +4,124 @@ import FightLogModal from './screens/FightLogModal';
 import StreakResetScreen from './screens/StreakResetScreen';
 import CalendarScreen from './screens/CalendarScreen';
 import StatisticsScreen from './screens/StatisticsScreen';
-import { Fight, computeStreakDays, getLocalStorageItem, setLocalStorageItem } from './utils';
-import { STORAGE_KEYS } from './constants';
+import SetupScreen from './screens/SetupScreen';
+import { Fight, computeStreakDays } from './utils';
+import {
+  getStoredToken,
+  loadFightsFromGitHub,
+  saveFightsToGitHub,
+} from './githubStorage';
 import './App.css';
 
 type AppScreen = 'dashboard' | 'reset' | 'calendar' | 'statistics';
+type AppState = 'setup' | 'loading' | 'ready' | 'error';
 
 export default function App() {
+  const [appState, setAppState] = useState<AppState>('loading');
+  const [token, setToken] = useState<string | null>(null);
   const [screen, setScreen] = useState<AppScreen>('dashboard');
   const [modalVisible, setModalVisible] = useState(false);
   const [streakDays, setStreakDays] = useState(0);
   const [lastFightReason, setLastFightReason] = useState('Communication');
-  const [loading, setLoading] = useState(true);
   const [fights, setFights] = useState<Fight[]>([]);
+  const [syncError, setSyncError] = useState('');
 
-  // Load persisted data on mount
+  // Bootstrap: check for token then load data
   useEffect(() => {
-    const tsRaw = getLocalStorageItem(STORAGE_KEYS.lastFightTimestamp);
-    const reason = getLocalStorageItem(STORAGE_KEYS.lastFightReason);
-    const fightHistoryRaw = getLocalStorageItem(STORAGE_KEYS.fightHistory);
-
-    const ts = tsRaw ? parseInt(tsRaw, 10) : null;
-    setStreakDays(computeStreakDays(ts));
-    if (reason) setLastFightReason(reason);
-    if (fightHistoryRaw) {
-      try {
-        const history = JSON.parse(fightHistoryRaw) as Fight[];
-        setFights(history);
-      } catch (_e) {
-        // ignore parse errors
-      }
+    const t = getStoredToken();
+    if (!t) {
+      setAppState('setup');
+      return;
     }
-    setLoading(false);
+    setToken(t);
+    loadData(t);
   }, []);
 
-  // Recalculate streak every minute while on dashboard
+  async function loadData(t: string) {
+    setAppState('loading');
+    try {
+      const loaded = await loadFightsFromGitHub(t);
+      setFights(loaded);
+      const last = loaded.length > 0 ? Math.max(...loaded.map((f) => f.timestamp)) : null;
+      setStreakDays(computeStreakDays(last));
+      if (loaded.length > 0) {
+        const latest = loaded.reduce((a, b) => (a.timestamp > b.timestamp ? a : b));
+        setLastFightReason(latest.reason);
+      }
+      setAppState('ready');
+    } catch (e: any) {
+      setSyncError(e.message || 'Failed to load data from GitHub');
+      setAppState('error');
+    }
+  }
+
+  const handleSetupComplete = useCallback((t: string) => {
+    setToken(t);
+    loadData(t);
+  }, []);
+
+  // Recalculate streak every minute on dashboard
   useEffect(() => {
-    if (screen !== 'dashboard') return;
+    if (screen !== 'dashboard' || appState !== 'ready') return;
     const interval = setInterval(() => {
-      const tsRaw = getLocalStorageItem(STORAGE_KEYS.lastFightTimestamp);
-      const ts = tsRaw ? parseInt(tsRaw, 10) : null;
-      setStreakDays(computeStreakDays(ts));
+      const last = fights.length > 0 ? Math.max(...fights.map((f) => f.timestamp)) : null;
+      setStreakDays(computeStreakDays(last));
     }, 60_000);
     return () => clearInterval(interval);
-  }, [screen]);
+  }, [screen, fights, appState]);
 
-  const handleLogFight = useCallback(() => {
-    setModalVisible(true);
-  }, []);
+  const handleLogFight = useCallback(() => setModalVisible(true), []);
 
   const handleSaveFight = useCallback(
-    (reason: string, _notes: string, _resolved: boolean) => {
+    async (reason: string, _notes: string, _resolved: boolean) => {
       const now = Date.now();
       const newFight: Fight = { timestamp: now, reason };
       const updatedFights = [...fights, newFight];
-      
-      setLocalStorageItem(STORAGE_KEYS.lastFightTimestamp, String(now));
-      setLocalStorageItem(STORAGE_KEYS.lastFightReason, reason);
-      setLocalStorageItem(STORAGE_KEYS.fightHistory, JSON.stringify(updatedFights));
-      
+
       setFights(updatedFights);
       setLastFightReason(reason);
       setStreakDays(0);
       setModalVisible(false);
       setScreen('reset');
+
+      // Persist to GitHub in background
+      if (token) {
+        try {
+          await saveFightsToGitHub(token, updatedFights);
+        } catch (e: any) {
+          console.error('GitHub save failed:', e.message);
+        }
+      }
     },
-    [fights]
+    [fights, token]
   );
 
-  const handleDone = useCallback(() => {
-    setScreen('dashboard');
-  }, []);
+  const handleDone = useCallback(() => setScreen('dashboard'), []);
 
-  if (loading) {
-    return <div className="app-loading" />;
+  if (appState === 'setup') {
+    return <SetupScreen onComplete={handleSetupComplete} />;
+  }
+
+  if (appState === 'loading') {
+    return (
+      <div className="app-loading-screen">
+        <span className="app-loading-spinner">🔥</span>
+        <span className="app-loading-text">Loading from GitHub…</span>
+      </div>
+    );
+  }
+
+  if (appState === 'error') {
+    return (
+      <div className="app-error-screen">
+        <span className="app-error-icon">⚠️</span>
+        <p className="app-error-title">Could not reach GitHub</p>
+        <p className="app-error-msg">{syncError}</p>
+        <button className="app-error-retry" onClick={() => token && loadData(token)}>
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -97,15 +141,12 @@ export default function App() {
           />
         </>
       )}
-
       {screen === 'reset' && (
         <StreakResetScreen lastReason={lastFightReason} onDone={handleDone} />
       )}
-
       {screen === 'calendar' && (
         <CalendarScreen fights={fights} onBack={() => setScreen('dashboard')} />
       )}
-
       {screen === 'statistics' && (
         <StatisticsScreen
           fights={fights}
